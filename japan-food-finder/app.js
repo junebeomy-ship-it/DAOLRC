@@ -12,7 +12,7 @@
     motsunabe:  { emoji: "🍲", grad: ["#e53935", "#e35d5b"], label: "모츠나베" },
     misokatsu:  { emoji: "🍖", grad: ["#8e2de2", "#c94b4b"], label: "미소카츠" },
     tebasaki:   { emoji: "🍗", grad: ["#f7b733", "#fc4a1a"], label: "테바사키" },
-    unagi:      { emoji: "🍱", grad: ["#654ea3", "#eaafc8"], label: "장어덮밥" },
+    unagi:      { emoji: "🍱", grad: ["#654ea3", "#eaafc8"], label: "장어/히츠마부시" },
     udon:       { emoji: "🍥", grad: ["#36d1dc", "#5b86e5"], label: "우동" },
     soba:       { emoji: "🍜", grad: ["#3a7bd5", "#3a6073"], label: "소바" },
     kaiseki:    { emoji: "🍶", grad: ["#0f2027", "#78909c"], label: "카이세키" },
@@ -31,7 +31,14 @@
     kishimen:   { emoji: "🍜", grad: ["#3ca55c", "#b5ac49"], label: "키시멘" },
     misonikomi: { emoji: "🍲", grad: ["#7b4397", "#dc2430"], label: "미소니코미우동" },
     ankake:     { emoji: "🍝", grad: ["#e65c00", "#f9d423"], label: "앙카케 스파게티" },
-    ebifry:     { emoji: "🍤", grad: ["#ff8008", "#ffc837"], label: "새우튀김" }
+    ebifry:     { emoji: "🍤", grad: ["#ff8008", "#ffc837"], label: "새우튀김" },
+    nagoyameshi:{ emoji: "🍱", grad: ["#c31432", "#240b36"], label: "나고야메시" },
+    yakiniku:   { emoji: "🥩", grad: ["#870000", "#190a05"], label: "야키니쿠" },
+    teppanyaki: { emoji: "🔥", grad: ["#4b1248", "#f0c27b"], label: "철판구이" },
+    izakaya:    { emoji: "🍶", grad: ["#334d50", "#cbcaa5"], label: "이자카야" },
+    curryudon:  { emoji: "🍛", grad: ["#dd5e89", "#f7bb97"], label: "카레우동" },
+    dessert:    { emoji: "🍰", grad: ["#ec008c", "#fc6767"], label: "디저트/파르페" },
+    bakery:     { emoji: "🥐", grad: ["#f2994a", "#f2c94c"], label: "베이커리" }
   };
   const catOf = (c) => CAT[c] || { emoji: "🍴", grad: ["#555", "#888"], label: "맛집" };
 
@@ -55,6 +62,19 @@
   function mapUrl(p) {
     const q = p.map || ((p.jp || p.name) + " " + (p.area || ""));
     return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+  }
+  function stars(r) {
+    const full = Math.floor(r);
+    const half = r - full >= 0.5;
+    let s = "";
+    for (let i = 0; i < full; i++) s += "★";
+    if (half) s += "⯨";
+    while (s.length < 5) s += "☆";
+    return s.slice(0, 5);
+  }
+  function fmtReviews(n) {
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+    return String(n);
   }
 
   DATA.cities.forEach((c) => {
@@ -103,6 +123,8 @@
     const city = DATA.cities.find((c) => c.id === currentCity);
     let list = DATA.places[currentCity] || [];
     if (currentType !== "all") list = list.filter((p) => p.type === currentType);
+    // 별점이 있으면 별점 높은 순으로 정렬
+    list = list.slice().sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
     emptyEl.hidden = true;
     resultsEl.hidden = false;
@@ -114,10 +136,10 @@
       const cat = catOf(p.category);
       const card = document.createElement("article");
       card.className = "card";
-      card.style.animationDelay = i * 40 + "ms";
+      card.style.animationDelay = i * 30 + "ms";
       const tagText = p.type + " · " + cat.label + (p.area ? " · " + esc(p.area) : "");
-      const menuHtml = p.menu.map((m) => "<span>" + esc(m) + "</span>").join("");
-      card.innerHTML =
+
+      let html =
         '<div class="card-top">' +
           '<div class="logo" style="background:linear-gradient(135deg,' +
             cat.grad[0] + "," + cat.grad[1] + ')">' + cat.emoji + "</div>" +
@@ -126,13 +148,31 @@
             '<div class="jp">' + esc(p.jp || "") + "</div>" +
           "</div>" +
         "</div>" +
-        '<span class="tag">' + tagText + "</span>" +
-        '<div class="divider"></div>' +
-        '<div class="row"><span class="ico">🕒</span><b>' + esc(p.hours) + "</b></div>" +
-        '<div class="row"><span class="ico">🍽️</span>대표 메뉴</div>' +
-        '<div class="menu">' + menuHtml + "</div>" +
-        '<a class="maplink" href="' + mapUrl(p) + '" target="_blank" rel="noopener noreferrer">' +
-          "📍 구글맵에서 위치 보기</a>";
+        '<span class="tag">' + tagText + "</span>";
+
+      if (typeof p.rating === "number") {
+        html += '<div class="rating">' +
+          '<span class="stars">' + stars(p.rating) + "</span>" +
+          '<b>' + p.rating.toFixed(1) + "</b>" +
+          '<span class="rev">(' + fmtReviews(p.reviews || 0) + ")</span>" +
+          (p.price ? '<span class="price">' + esc(p.price) + "</span>" : "") +
+          "</div>";
+      }
+
+      html += '<div class="divider"></div>';
+
+      if (p.hours) {
+        html += '<div class="row"><span class="ico">🕒</span><b>' + esc(p.hours) + "</b></div>";
+      }
+      if (p.menu && p.menu.length) {
+        html += '<div class="row"><span class="ico">🍽️</span>대표 메뉴</div>' +
+          '<div class="menu">' + p.menu.map((m) => "<span>" + esc(m) + "</span>").join("") + "</div>";
+      }
+
+      html += '<a class="maplink" href="' + mapUrl(p) + '" target="_blank" rel="noopener noreferrer">' +
+        "📍 구글맵에서 위치 보기</a>";
+
+      card.innerHTML = html;
       cardsEl.appendChild(card);
     });
   }
