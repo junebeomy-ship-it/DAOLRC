@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>일본 맛집 파인더 · 지역별 음식점 · 카페</title>
+  <meta name="description" content="도쿄, 오사카, 삿포로, 후쿠오카, 나고야, 교토 등 일본 지역별 인기 맛집과 카페를 찾아보세요. 영업시간과 대표 메뉴를 한눈에." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="brand">🍜 <span>일본 맛집 파인더</span></div>
+      <h1>어느 지역으로<br />떠나시나요?</h1>
+      <p class="subtitle">지역을 선택하면 그곳의 인기 음식점과 카페,<br class="mo-br" /> 영업시간과 대표 메뉴를 보여드려요.</p>
+
+      <div class="search-wrap">
+        <input id="search" type="text" autocomplete="off"
+               placeholder="지역을 입력하세요 (예: 도쿄, 오사카, 삿포로…)" />
+        <div id="suggest" class="suggest" hidden></div>
+      </div>
+
+      <div class="chips" id="cityChips"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="results" class="results" hidden>
+      <div class="results-head">
+        <h2 id="resultsTitle"></h2>
+        <div class="filters" id="typeFilters"></div>
+      </div>
+      <div id="cards" class="cards"></div>
+    </section>
+
+    <section id="empty" class="empty">
+      <div class="empty-emoji">🗾</div>
+      <p>위에서 지역을 선택해 보세요.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>영업시간·메뉴는 변동될 수 있으니 방문 전 확인을 권장합니다. · 데이터는 공개된 여행 정보를 기반으로 정리했습니다.</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
