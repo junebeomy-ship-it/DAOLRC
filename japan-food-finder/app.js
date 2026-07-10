@@ -123,7 +123,6 @@
     const city = DATA.cities.find((c) => c.id === currentCity);
     let list = DATA.places[currentCity] || [];
     if (currentType !== "all") list = list.filter((p) => p.type === currentType);
-    // 별점이 있으면 별점 높은 순으로 정렬
     list = list.slice().sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
     emptyEl.hidden = true;
@@ -134,46 +133,38 @@
     cardsEl.innerHTML = "";
     list.forEach((p, i) => {
       const cat = catOf(p.category);
-      const card = document.createElement("article");
-      card.className = "card";
-      card.style.animationDelay = i * 30 + "ms";
-      const tagText = p.type + " · " + cat.label + (p.area ? " · " + esc(p.area) : "");
+      const item = document.createElement("article");
+      item.className = "item";
+      item.style.animationDelay = i * 20 + "ms";
 
-      let html =
-        '<div class="card-top">' +
-          '<div class="logo" style="background:linear-gradient(135deg,' +
-            cat.grad[0] + "," + cat.grad[1] + ')">' + cat.emoji + "</div>" +
-          '<div class="card-name">' +
-            "<h3>" + esc(p.name) + "</h3>" +
-            '<div class="jp">' + esc(p.jp || "") + "</div>" +
-          "</div>" +
-        "</div>" +
-        '<span class="tag">' + tagText + "</span>";
-
+      let meta = '<span class="li-tag">' + p.type + " · " + cat.label +
+        (p.area ? " · " + esc(p.area) : "") + "</span>";
       if (typeof p.rating === "number") {
-        html += '<div class="rating">' +
-          '<span class="stars">' + stars(p.rating) + "</span>" +
+        meta += '<span class="li-rating"><span class="stars">' + stars(p.rating) + "</span>" +
           '<b>' + p.rating.toFixed(1) + "</b>" +
-          '<span class="rev">(' + fmtReviews(p.reviews || 0) + ")</span>" +
-          (p.price ? '<span class="price">' + esc(p.price) + "</span>" : "") +
-          "</div>";
+          '<span class="rev">(' + fmtReviews(p.reviews || 0) + ")</span></span>";
       }
+      if (p.price) meta += '<span class="li-price">' + esc(p.price) + "</span>";
+      if (p.hours) meta += '<span class="li-hours">🕒 ' + esc(p.hours) + "</span>";
 
-      html += '<div class="divider"></div>';
-
-      if (p.hours) {
-        html += '<div class="row"><span class="ico">🕒</span><b>' + esc(p.hours) + "</b></div>";
-      }
+      let extra = "";
       if (p.menu && p.menu.length) {
-        html += '<div class="row"><span class="ico">🍽️</span>대표 메뉴</div>' +
-          '<div class="menu">' + p.menu.map((m) => "<span>" + esc(m) + "</span>").join("") + "</div>";
+        extra = '<div class="menu">' +
+          p.menu.map((m) => "<span>" + esc(m) + "</span>").join("") + "</div>";
       }
 
-      html += '<a class="maplink" href="' + mapUrl(p) + '" target="_blank" rel="noopener noreferrer">' +
-        "📍 구글맵에서 위치 보기</a>";
-
-      card.innerHTML = html;
-      cardsEl.appendChild(card);
+      item.innerHTML =
+        '<div class="li-rank">' + (i + 1) + "</div>" +
+        '<div class="li-logo" style="background:linear-gradient(135deg,' +
+          cat.grad[0] + "," + cat.grad[1] + ')">' + cat.emoji + "</div>" +
+        '<div class="li-body">' +
+          '<div class="li-head"><span class="li-name">' + esc(p.name) + "</span>" +
+            '<span class="li-jp">' + esc(p.jp || "") + "</span></div>" +
+          '<div class="li-meta">' + meta + "</div>" +
+          extra +
+        "</div>" +
+        '<a class="li-map" href="' + mapUrl(p) + '" target="_blank" rel="noopener noreferrer" title="구글맵에서 위치 보기">📍</a>';
+      cardsEl.appendChild(item);
     });
   }
 
